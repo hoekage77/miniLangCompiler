@@ -1,6 +1,7 @@
 miniLang Compiler
 
-Overview
+Overview:
+
 This Go Lang Compiler is a simple, educational compiler developed using Go language. Its primary purpose is to translate a source code written in a custom language into an intermediate representation and eventually to a target machine code.
 
 Features
