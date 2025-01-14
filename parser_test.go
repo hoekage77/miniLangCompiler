@@ -1,5 +1,3 @@
-// parser_test.go
-
 package main
 
 import (
@@ -38,7 +36,7 @@ func TestParser(t *testing.T) {
             },
         },
         {
-            source: `if (x &gt; 4) {
+            source: `if (x > 4) {
                        let y = x + 1;
                      }`,
             expected: &ASTNode{
@@ -85,6 +83,116 @@ func TestParser(t *testing.T) {
                 },
             },
         },
+        {
+            source:   "let b = 10 - 2 * 3;",
+            expected: &ASTNode{
+                Type: NodeProgram,
+                Body: []*ASTNode{
+                    {
+                        Type:  NodeDeclaration,
+                        Value: "b",
+                        Left: &ASTNode{
+                            Type:  NodeBinaryOp,
+                            Value: "-",
+                            Left: &ASTNode{
+                                Type:  NodeLiteral,
+                                Value: "10",
+                            },
+                            Right: &ASTNode{
+                                Type:  NodeBinaryOp,
+                                Value: "*",
+                                Left: &ASTNode{
+                                    Type:  NodeLiteral,
+                                    Value: "2",
+                                },
+                                Right: &ASTNode{
+                                    Type:  NodeLiteral,
+                                    Value: "3",
+                                },
+                            },
+                        },
+                }},
+            },
+        },
+        {
+            source:   "while (a < 10) { a = a + 1; }",
+            expected: &ASTNode{
+                Type: NodeProgram,
+                Body: []*ASTNode{
+                    {
+                        Type: NodeWhileStatement,
+                        Left: &ASTNode{
+                            Type:  NodeBinaryOp,
+                            Value: "<",
+                            Left: &ASTNode{
+                                Type:  NodeIdentifier,
+                                Value: "a",
+                            },
+                            Right: &ASTNode{
+                                Type:  NodeLiteral,
+                                Value: "10",
+                            },
+                        },
+                        Right: &ASTNode{
+                            Type: NodeBlock,
+                            Body: []*ASTNode{
+                                {
+                                    Type: NodeAssignment,
+                                    Value: "a",
+                                    Left: &ASTNode{
+                                        Type:  NodeIdentifier,
+                                        Value: "a",
+                                    },
+                                    Right: &ASTNode{
+                                        Type:  NodeBinaryOp,
+                                        Value: "+",
+                                        Left: &ASTNode{
+                                            Type:  NodeIdentifier,
+                                            Value: "a",
+                                        },
+                                        Right: &ASTNode{
+                                            Type:  NodeLiteral,
+                                            Value: "1",
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        {
+            source:   "let c = (5 + 3) * 2;",
+            expected: &ASTNode{
+                Type: NodeProgram,
+                Body: []*ASTNode{
+                    {
+                        Type:  NodeDeclaration,
+                        Value: "c",
+                        Left: &ASTNode{
+                            Type:  NodeBinaryOp,
+                            Value: "*",
+                            Left: &ASTNode{
+                                Type: NodeBinaryOp,
+                                Value: "+",
+                                Left: &ASTNode{
+                                    Type:  NodeLiteral,
+                                    Value: "5",
+                                },
+                                Right: &ASTNode{
+                                    Type:  NodeLiteral,
+                                    Value: "3",
+                                },
+                            },
+                            Right: &ASTNode{
+                                Type:  NodeLiteral,
+                                Value: "2",
+                            },
+                        },
+                }},
+            },
+        },
     }
 
     for _, test := range tests {
@@ -100,4 +208,3 @@ func TestParser(t *testing.T) {
         }
     }
 }
-

@@ -1,11 +1,10 @@
-// parser.go
-
 package main
 
 import (
     "fmt"
 )
 
+// Parser represents a parser for the custom language.
 type Parser struct {
     tokens       []Token
     pos          int
@@ -13,6 +12,7 @@ type Parser struct {
     symbolTable  *SymbolTable
 }
 
+// NewParser creates a new Parser instance with the given tokens and symbol table.
 func NewParser(tokens []Token, symbolTable *SymbolTable) *Parser {
     return &Parser{
         tokens:       tokens,
@@ -22,6 +22,7 @@ func NewParser(tokens []Token, symbolTable *SymbolTable) *Parser {
     }
 }
 
+// advance moves to the next token in the list.
 func (p *Parser) advance() {
     p.pos++
     if p.pos < len(p.tokens) {
@@ -29,14 +30,16 @@ func (p *Parser) advance() {
     }
 }
 
+// expect checks if the current token matches the expected type and advances to the next token.
 func (p *Parser) expect(tokenType TokenType) {
     if p.currentToken.Type == tokenType {
         p.advance()
     } else {
-        panic(fmt.Sprintf("Expected %s but found %s", tokenType, p.currentToken.Type))
+        panic(fmt.Sprintf("Syntax Error: Expected %s but found %s", tokenType, p.currentToken.Type))
     }
 }
 
+// parseProgram parses the entire program and returns the root AST node.
 func (p *Parser) parseProgram() *ASTNode {
     program := &ASTNode{Type: NodeProgram, Body: []*ASTNode{}}
     for p.pos < len(p.tokens) {
@@ -48,6 +51,7 @@ func (p *Parser) parseProgram() *ASTNode {
     return program
 }
 
+// parseStatement parses a single statement based on the current token.
 func (p *Parser) parseStatement() *ASTNode {
     switch p.currentToken.Type {
     case LET:
@@ -63,6 +67,7 @@ func (p *Parser) parseStatement() *ASTNode {
     }
 }
 
+// parseDeclaration parses a variable declaration statement.
 func (p *Parser) parseDeclaration() *ASTNode {
     p.expect(LET)
     identifier := p.currentToken.Value
@@ -76,10 +81,12 @@ func (p *Parser) parseDeclaration() *ASTNode {
     return &ASTNode{Type: NodeDeclaration, Value: identifier, Left: value}
 }
 
+// parseExpression parses an expression.
 func (p *Parser) parseExpression() *ASTNode {
     return p.parseEquality()
 }
 
+// parseEquality parses an equality expression.
 func (p *Parser) parseEquality() *ASTNode {
     node := p.parseComparison()
     for p.currentToken.Type == EQUAL {
@@ -91,6 +98,7 @@ func (p *Parser) parseEquality() *ASTNode {
     return node
 }
 
+// parseComparison parses a comparison expression.
 func (p *Parser) parseComparison() *ASTNode {
     node := p.parseTerm()
     for p.currentToken.Type == GT || p.currentToken.Type == GE || p.currentToken.Type == LT || p.currentToken.Type == LE {
@@ -102,6 +110,7 @@ func (p *Parser) parseComparison() *ASTNode {
     return node
 }
 
+// parseTerm parses a term in an expression.
 func (p *Parser) parseTerm() *ASTNode {
     node := p.parseFactor()
     for p.currentToken.Type == PLUS || p.currentToken.Type == MINUS {
@@ -113,6 +122,7 @@ func (p *Parser) parseTerm() *ASTNode {
     return node
 }
 
+// parseFactor parses a factor in an expression.
 func (p *Parser) parseFactor() *ASTNode {
     node := p.parseUnary()
     for p.currentToken.Type == STAR || p.currentToken.Type == SLASH {
@@ -124,6 +134,7 @@ func (p *Parser) parseFactor() *ASTNode {
     return node
 }
 
+// parseUnary parses a unary expression.
 func (p *Parser) parseUnary() *ASTNode {
     if p.currentToken.Type == BANG || p.currentToken.Type == MINUS {
         op := p.currentToken.Value
@@ -134,6 +145,7 @@ func (p *Parser) parseUnary() *ASTNode {
     return p.parsePrimary()
 }
 
+// parsePrimary parses a primary expression.
 func (p *Parser) parsePrimary() *ASTNode {
     switch p.currentToken.Type {
     case NUMBER:
@@ -145,7 +157,7 @@ func (p *Parser) parsePrimary() *ASTNode {
 
         // Type check: Ensure the variable is declared
         if _, exists := p.symbolTable.Lookup(value); !exists {
-            panic(fmt.Sprintf("Use of undeclared identifier '%s'", value))
+            panic(fmt.Sprintf("Semantic Error: Use of undeclared identifier '%s'", value))
         }
 
         p.advance()
@@ -156,10 +168,11 @@ func (p *Parser) parsePrimary() *ASTNode {
         p.expect(RPAREN)
         return expr
     default:
-        panic(fmt.Sprintf("Unexpected token: %s", p.currentToken.Type))
+        panic(fmt.Sprintf("Syntax Error: Unexpected token %s", p.currentToken.Type))
     }
 }
 
+// parseIfStatement parses an if statement.
 func (p *Parser) parseIfStatement() *ASTNode {
     p.expect(IF)
     p.expect(LPAREN)
@@ -174,6 +187,7 @@ func (p *Parser) parseIfStatement() *ASTNode {
     return &ASTNode{Type: NodeIfStatement, Left: condition, Right: thenBlock, Body: []*ASTNode{elseBlock}}
 }
 
+// parseWhileStatement parses a while statement.
 func (p *Parser) parseWhileStatement() *ASTNode {
     p.expect(WHILE)
     p.expect(LPAREN)
@@ -183,6 +197,7 @@ func (p *Parser) parseWhileStatement() *ASTNode {
     return &ASTNode{Type: NodeWhileStatement, Left: condition, Right: body}
 }
 
+// parseBlock parses a block of statements.
 func (p *Parser) parseBlock() *ASTNode {
     p.expect(LBRACE)
     block := &ASTNode{Type: NodeBlock, Body: []*ASTNode{}}
