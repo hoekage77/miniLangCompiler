@@ -29,6 +29,18 @@ func TestLexer(t *testing.T) {
                 {RBRACE, "}"},
             },
         },
+        {
+            source:   "let b = 10 - 2 * 3;",
+            expected: []Token{{LET, "let"}, {IDENTIFIER, "b"}, {ASSIGN, "="}, {NUMBER, "10"}, {MINUS, "-"}, {NUMBER, "2"}, {STAR, "*"}, {NUMBER, "3"}, {SEMICOLON, ";"}},
+        },
+        {
+            source:   "while (a &lt; 10) { a = a + 1; }",
+            expected: []Token{{WHILE, "while"}, {LPAREN, "("}, {IDENTIFIER, "a"}, {LT, "<"}, {NUMBER, "10"}, {RPAREN, ")"}, {LBRACE, "{"}, {IDENTIFIER, "a"}, {ASSIGN, "="}, {IDENTIFIER, "a"}, {PLUS, "+"}, {NUMBER, "1"}, {SEMICOLON, ";"}, {RBRACE, "}"}},
+        },
+        {
+            source:   "let c = (5 + 3) * 2;",
+            expected: []Token{{LET, "let"}, {IDENTIFIER, "c"}, {ASSIGN, "="}, {LPAREN, "("}, {NUMBER, "5"}, {PLUS, "+"}, {NUMBER, "3"}, {RPAREN, ")"}, {STAR, "*"}, {NUMBER, "2"}, {SEMICOLON, ";"}},
+        },
     }
 
     for _, test := range tests {
